@@ -16,17 +16,17 @@
  *                     |____________________|___________________| 
  * 
  * 1. Sample 0 - ConnectionStrings & Commands:
-     * 1.1 HardCoded - Нежелательный метод
-     * --------------------------------------------
-     *   static void Main(string[] args){
-     *       string connectionString = @"Data Source=.\SQLEXPRESS;Initial Catalog=usersdb;Integrated Security=True";
-     *  }
-     *  ------------------------------------------
-     * 1.2 Через App.config (web.config)
-     * 
-     *     using System.Configuration и подключаем System.Configuration в References
-     *     В App.config, в <cofiguration> добавляем секцю <connectionStrings>
-     * ------------------------------------------
+ *  1.1 HardCoded - Нежелательный метод
+ *   --------------------------------------------
+ *   static void Main(string[] args){
+ *          string connectionString = @"Data Source=.\SQLEXPRESS;Initial Catalog=usersdb;Integrated Security=True";
+ *     }
+ *     ------------------------------------------
+ *    1.2 Через App.config (web.config)
+ * 
+ *       using System.Configuration и подключаем System.Configuration в References
+ *        В App.config, в <cofiguration> добавляем секцю <connectionStrings>
+ *   ------------------------------------------
      *  <connectionStrings>
      *   <add name="Default connection" connectionString="Data source=.\SQLSERV2014; Initial catalog=usersdb; Integrated security=True"
      *        providerName="System.Data.SqlClient"/>
