@@ -26,7 +26,7 @@
  * 
  *       using System.Configuration и подключаем System.Configuration в References
  *        В App.config, в <cofiguration> добавляем секцю <connectionStrings>
- *   ------------------------------------------
+ *   ------------------------------------------XXX
      *  <connectionStrings>
      *   <add name="Default connection" connectionString="Data source=.\SQLSERV2014; Initial catalog=usersdb; Integrated security=True"
      *        providerName="System.Data.SqlClient"/>
