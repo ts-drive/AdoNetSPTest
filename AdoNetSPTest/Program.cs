@@ -37,10 +37,12 @@
      *     static string connStr = ConfigurationManager.ConnectionStrings["Default connection"].ConnectionString;
      *  ------------------------------------------
  *2. Sample 1 - commands with !StoredProcedures!:
- *3. Sample 2 - stored procedures with output parameters: 
+ *3. Sample 2 - stored procedures with output parameters:
+ *4. sample 3 - DataAdapter at console:
  */
 
 using System;
+using System.Data;
 using System.Data.SqlClient;
 using System.Configuration;
 
@@ -50,11 +52,12 @@ namespace AdoNetSPTest
     {
         static string connStr = ConfigurationManager.ConnectionStrings["Default connection"].ConnectionString;
         static string name;
+        static int age;
         static int sampleNum=0;
 
         static void Main(string[] args)
         {
-            Console.Write(">Введите номер примера Sample[0..2]: ");
+            Console.Write(">Введите номер примера Sample[0..3]: ");
 
             Int32.TryParse(Console.ReadLine(),out sampleNum);
 
@@ -69,7 +72,7 @@ namespace AdoNetSPTest
                         Console.Write(">Введите имя пользователя: ");
                         name = Console.ReadLine();
                         Console.Write(">Введите возраст: ");
-                        int age = Int32.Parse(Console.ReadLine());
+                        age = Int32.Parse(Console.ReadLine());
                         addUser(name, age);
                         Console.WriteLine();
                         getUsers();
@@ -81,6 +84,15 @@ namespace AdoNetSPTest
                         getAgeRange(name);
                         Console.Read();
                     break;
+                    //Sample 3
+                    case 3:
+                        Console.Write(">Введите имя пользователя: ");
+                        name = Console.ReadLine();
+                        Console.Write(">Введите возраст: ");
+                        age = Int32.Parse(Console.ReadLine());
+
+                        sample3(name,age);
+                        break;
                 default:
                     sample0();
                 break;
@@ -296,6 +308,50 @@ namespace AdoNetSPTest
                 Console.WriteLine("Минимальный возраст: {0} ", command.Parameters["@minAge"].Value);
                 Console.WriteLine("Максимальный возраст: {0} ", command.Parameters["@maxAge"].Value);
             }
+        }
+
+        private static void sample3(string name,int age)
+        {
+            string sqlexpression = "select * from users";
+
+            using (SqlConnection conn=new SqlConnection(connStr))
+            {
+                conn.Open();
+                SqlDataAdapter adapter = new SqlDataAdapter(sqlexpression, conn);
+                DataSet ds = new DataSet();
+                adapter.Fill(ds);
+
+                DataTable dt = ds.Tables[0];
+                DataRow newRow = dt.NewRow();
+                newRow["name"] = name;
+                newRow["Age"] = age;
+                dt.Rows.Add(newRow);
+
+                //Создаем объект SqlCommandBuilder
+                SqlCommandBuilder commandBuilder = new SqlCommandBuilder(adapter);
+                adapter.Update(ds);
+                //Альтернатива - обновление только одной таблицы - adapter.Update(dt);
+
+                //Заново получаем данные из БД, зачищаем DataSet
+                ds.Clear();
+                //перезагружаем данные
+                adapter.Fill(ds);
+
+                foreach (DataColumn column in dt.Columns)
+                    Console.Write("\t{0}",column.ColumnName);
+                Console.WriteLine();
+
+                //Перебор всех строк таблицы
+                foreach (DataRow dr in dt.Rows)
+                {
+                    //получаем все ячейки строки
+                    var cells = dr.ItemArray;
+                    foreach (object cell in cells)
+                        Console.Write("\t{0}", cell);
+                    Console.WriteLine();
+                }
+            }
+            Console.Read();
         }
     }
 }

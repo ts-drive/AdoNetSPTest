@@ -27,7 +27,7 @@ namespace AdoDataAdapterTest
         public Form1()
         {
             InitializeComponent();
-            // Первый пример
+            // Первый короткий пример
             /*
             string connStr = ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString;
             string sqlexpression = "Select * from users";
