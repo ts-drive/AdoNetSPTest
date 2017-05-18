@@ -39,6 +39,15 @@
  *2. Sample 1 - commands with !StoredProcedures!:
  *3. Sample 2 - stored procedures with output parameters:
  *4. sample 3 - DataAdapter at console:
+ *                                             ______________
+ *     |DB|<--->|Connection|<--->|Command|<--->|DATA ADAPTER|<--->{Command builder}
+ *                                             |------------|
+ *                                                |      ^
+ *                                                V      |
+ *                                             |------------|
+ *                                             | DatTable/  |
+ *                                             | DataSet    |
+ *                                             |------------|
  */
 
 using System;
