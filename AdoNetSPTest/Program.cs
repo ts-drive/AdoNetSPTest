@@ -327,7 +327,10 @@ namespace AdoNetSPTest
                 newRow["Age"] = age;
                 dt.Rows.Add(newRow);
 
-                //Создаем объект SqlCommandBuilder
+                //Создаем объект SqlCommandBuilder!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                // Для применения этого класса достаточно вызвать его конструктор,
+                //в который передается нужный адаптер
+                //Причем больше нигде в коде вы этот объект не вызываем.
                 SqlCommandBuilder commandBuilder = new SqlCommandBuilder(adapter);
                 adapter.Update(ds);
                 //Альтернатива - обновление только одной таблицы - adapter.Update(dt);
