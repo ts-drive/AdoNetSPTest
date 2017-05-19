@@ -26,7 +26,7 @@
  * 
  *       using System.Configuration и подключаем System.Configuration в References
  *        В App.config, в <cofiguration> добавляем секцю <connectionStrings>
- *   ------------------------------------------XXX
+ *   ------------------------------------------
      *  <connectionStrings>
      *   <add name="Default connection" connectionString="Data source=.\SQLSERV2014; Initial catalog=usersdb; Integrated security=True"
      *        providerName="System.Data.SqlClient"/>
@@ -49,6 +49,20 @@
  *                                             | DatTable/  |
  *                                             | DataSet    |
  *                                             |------------|
+ *                                             
+ *5. Sample 4 - Обновление из DataSet вручную
+ * Хотя в предыдущей теме объект SqlCommandBuilder позволял нам автоматически
+ * создать все нужные выражения для обновления данных в БД из DataSet,
+ * но все же этот способ имеет свои недостатки. Например, взглянем на следующий кусочек кода,
+ * который использовался в прошлой теме:
+ *      SqlCommandBuilder commandBuilder = new SqlCommandBuilder(adapter);
+ *       adapter.Update(ds);
+ *       ds.Clear();
+ *       adapter.Fill(ds);
+ * После обновления происходит очистка DataSet и перезагрузка данных,
+ * что снижает производительность приложения. Хотя в DataTable
+ * у нас уже добавлена строка с новыми данными, и в ней не хватает только id - значения,
+ * которое генерируется самой базой данных при добавлении
  */
 
 using System;
@@ -67,7 +81,7 @@ namespace AdoNetSPTest
 
         static void Main(string[] args)
         {
-            Console.Write(">Введите номер примера Sample[0..3]: ");
+            Console.Write(">Введите номер примера Sample[0..4]: ");
 
             Int32.TryParse(Console.ReadLine(),out sampleNum);
 
@@ -102,6 +116,15 @@ namespace AdoNetSPTest
                         age = Int32.Parse(Console.ReadLine());
 
                         sample3(name,age);
+                        break;
+                    //Sample 4
+                    case 4:
+                        Console.Write(">Введите имя пользователя: ");
+                        name = Console.ReadLine();
+                        Console.Write(">Введите возраст: ");
+                        age = Int32.Parse(Console.ReadLine());
+
+                        sample3(name, age);
                         break;
                 default:
                     sample0();
@@ -346,6 +369,8 @@ namespace AdoNetSPTest
                 //Альтернатива - обновление только одной таблицы - adapter.Update(dt);
 
                 //Заново получаем данные из БД, зачищаем DataSet
+                //Чтобы получить id - значения, которое генерируется самой базой данных при добавлении
+                //Альтернатива - хранимая процедура возвращающая @id=SCOPE_IDENTITY()
                 ds.Clear();
                 //перезагружаем данные
                 adapter.Fill(ds);
@@ -365,6 +390,51 @@ namespace AdoNetSPTest
                 }
             }
             Console.Read();
+        }
+
+        private static void sample4(string name,int age)
+        {
+            string sqlExpression = "select * from users";
+
+            using (SqlConnection conn=new SqlConnection(connStr))
+            {
+                conn.Open();
+                SqlDataAdapter adapter = new SqlDataAdapter(sqlExpression, conn);
+                SqlCommandBuilder builder = new SqlCommandBuilder(adapter);
+
+                adapter.InsertCommand = new SqlCommand("sp_CreateUser", conn);
+                adapter.InsertCommand.CommandType = CommandType.StoredProcedure;
+                adapter.InsertCommand.Parameters.Add(new SqlParameter("@name",SqlDbType.NVarChar,50,"Name"));
+                adapter.InsertCommand.Parameters.Add(new SqlParameter("@age", SqlDbType.Int, 0, "Age"));
+                SqlParameter parameter=adapter.InsertCommand.Parameters.Add(new SqlParameter("@id", SqlDbType.Int, 0, "id"));
+                parameter.Direction = ParameterDirection.Output;
+
+                DataSet ds = new DataSet();
+                adapter.Fill(ds);
+
+                DataTable dt = ds.Tables[0];
+                DataRow newRow = dt.NewRow();
+                newRow["name"] = name;
+                newRow["age"] = age;
+                dt.Rows.Add(newRow);
+
+                adapter.Update(ds);
+                ds.AcceptChanges();
+
+                foreach (DataColumn column in dt.Columns)
+                    Console.Write("\t{0}",column.ColumnName);
+                Console.WriteLine();
+
+                foreach(DataRow dr in dt.Rows)
+                {
+                    var cells = dr.ItemArray;
+                    foreach (object cell in cells)
+                        Console.Write("\t{0}", cell);
+                    Console.WriteLine();
+                }
+            }
+
+            Console.ReadLine();
         }
     }
 }
